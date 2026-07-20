@@ -13,59 +13,76 @@ def emotion_detector(text_to_analyze):
         dict: A dictionary containing emotion scores for anger, disgust, fear,
               joy, and sadness, along with the dominant emotion.
     """
+
     url = 'https://sn-watson-emotion.labs.skills.network/v1/watson.runtime.nlp.v1/NlpService/EmotionPredict'
+
     headers = {
         "grpc-metadata-mm-model-id": "emotion_aggregated-workflow_lang_en_stock"
     }
-    input_data = {"raw_document": {"text": text_to_analyze}}
 
-    response = requests.post(url, headers=headers, json=input_data)
+    input_data = {
+        "raw_document": {
+            "text": text_to_analyze
+        }
+    }
 
-    # Handle Bad Request (400)
+    # Send request to Watson NLP EmotionPredict API
+    response = requests.post(
+        url,
+        headers=headers,
+        json=input_data
+    )
+
+    # Check for HTTP 400 Bad Request
     if response.status_code == 400:
         return {
-            'anger': None,
-            'disgust': None,
-            'fear': None,
-            'joy': None,
-            'sadness': None,
-            'dominant_emotion': None
+            "anger": None,
+            "disgust": None,
+            "fear": None,
+            "joy": None,
+            "sadness": None,
+            "dominant_emotion": None
         }
 
-    # Convert the response text into a dictionary
+    # Convert response JSON into dictionary
     response_dict = json.loads(response.text)
 
-    # Extract the emotion scores from the response
-    emotion_predictions = response_dict.get('emotionPredictions', [])
+    # Extract emotion predictions
+    emotion_predictions = response_dict.get("emotionPredictions", [])
+
     if emotion_predictions:
-        emotions = emotion_predictions[0].get('emotion', {})
+        emotions = emotion_predictions[0].get("emotion", {})
     else:
         emotions = {}
 
-    # Extract required emotions with their scores
-    anger_score = emotions.get('anger', 0)
-    disgust_score = emotions.get('disgust', 0)
-    fear_score = emotions.get('fear', 0)
-    joy_score = emotions.get('joy', 0)
-    sadness_score = emotions.get('sadness', 0)
+    # Extract emotion scores
+    anger_score = emotions.get("anger", 0)
+    disgust_score = emotions.get("disgust", 0)
+    fear_score = emotions.get("fear", 0)
+    joy_score = emotions.get("joy", 0)
+    sadness_score = emotions.get("sadness", 0)
 
-    # Find the dominant emotion
-    scores = {
-        'anger': anger_score,
-        'disgust': disgust_score,
-        'fear': fear_score,
-        'joy': joy_score,
-        'sadness': sadness_score
+    # Store scores in dictionary
+    emotion_scores = {
+        "anger": anger_score,
+        "disgust": disgust_score,
+        "fear": fear_score,
+        "joy": joy_score,
+        "sadness": sadness_score
     }
 
-    dominant_emotion = max(scores, key=scores.get)
+    # Find dominant emotion
+    dominant_emotion = max(
+        emotion_scores,
+        key=emotion_scores.get
+    )
 
-    # Return the formatted output
+    # Return final result
     return {
-        'anger': anger_score,
-        'disgust': disgust_score,
-        'fear': fear_score,
-        'joy': joy_score,
-        'sadness': sadness_score,
-        'dominant_emotion': dominant_emotion
+        "anger": anger_score,
+        "disgust": disgust_score,
+        "fear": fear_score,
+        "joy": joy_score,
+        "sadness": sadness_score,
+        "dominant_emotion": dominant_emotion
     }
